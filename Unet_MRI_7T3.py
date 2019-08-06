@@ -198,3 +198,5 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     main(args)
+
+    #Check the check-in feature on Git
