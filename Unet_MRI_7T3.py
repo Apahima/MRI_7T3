@@ -47,10 +47,13 @@ def get_data(k_high_T):
     simulator_class_MRI = simulator_MRI()
 
     low_res_real, high_res_real, _, _ = simulator_class_MRI.lowfieldsim(k_high_T[:128,:128])
-    input_mr = low_res_real.permute(2,0,1) / 1e16
-    target = low_res_real.permute(2,0,1) / 1e16
-    output_gt =  high_res_real.permute(2,0,1) / 1e16
+    input_mr = low_res_real.permute(2,0,1)
+    target = low_res_real.permute(2,0,1)
+    output_gt =  high_res_real.permute(2,0,1)
 
+    input_mr = (input_mr - torch.min(input_mr)) / (torch.max(input_mr)-torch.min(input_mr))
+    target = (target - torch.min(target)) / (torch.max(target)-torch.min(target))
+    output_gt = (output_gt - torch.min(output_gt)) / (torch.max(output_gt)-torch.min(output_gt))
     #Sanity check
     # target = torch.randn(8, 128, 128)
     # output_gt = torch.randn(8, 128, 128)
@@ -90,17 +93,20 @@ def main(args):
         # arrange the output from model to fit MRI simulator size. output = [1, #channels (coils), in_width, in_height]
         output_to_sim = output.unsqueeze(-1)
         output_to_sim = torch.cat((output_to_sim, torch.zeros_like(output_to_sim)), dim=-1)  # fit the out put for the FFT function, add zeros channel at (-1) position,
-        k_space_output = torch.fft(output_to_sim, 2, normalized=False)  # Getting FFT results, this is the k-space [1, #channels (coils), in_width, in_height, complex (2)]
+        # k_space_output = torch.fft(output_to_sim, 2, normalized=False)  # Getting FFT results, this is the k-space [1, #channels (coils), in_width, in_height, complex (2)]
+        k_space_output = Ttorch.fft2(output_to_sim)
         k_space_output = k_space_output.unsqueeze(-5)  # insert one more channel and duplicate the existing data, because the MRI simulator have 3 samples for the same image
-        k_space_output = torch.cat((k_space_output, k_space_output, k_space_output), dim=1)  # duplicate the data three times just for MRI simulator compatible, inside the simulator we take only one picture i.e. dim(2) = 1.
+        # k_space_output = torch.cat((k_space_output, k_space_output, k_space_output), dim=1)  # duplicate the data three times just for MRI simulator compatible, inside the simulator we take only one picture i.e. dim(2) = 1.
         k_space_output = k_space_output.permute(3, 4, 0, 1, 2, 5)  # arracnge the k-space to fit the raw-data order
 
         target_estimate, _, _, _ = simulator_class_MRI.lowfieldsim(k_space_output)  # feed the simulator with complex frequency data [in_width, in_height, 1,3, #coils (channels),complex (2)] the output is image [in_width, in_height, # coils (channels)]
 
-        target_estimate = target_estimate.permute(2, 0, 1) / 1e16 # Re-ordering to fit the model expected shape [# coils (channels),in_width, in_height]
+        target_estimate = target_estimate.permute(2, 0, 1)  # Re-ordering to fit the model expected shape [# coils (channels),in_width, in_height]
+
+        target_estimate = (target_estimate - torch.min(target_estimate)) / (torch.max(target_estimate) - torch.min(target_estimate))
 
         # loss function
-        loss = F.l1_loss(target_estimate, target)  # can also be F.mse_loss
+        loss = F.l1_loss(target, target_estimate)  # can also be F.mse_loss
         # print(loss)
         actual_loss = F.l1_loss(output_gt, output.squeeze(0))
 
@@ -117,6 +123,7 @@ def main(args):
     save_model(args, args.exp_dir, epoch, model, optimizer, best_dev_loss, is_new_best)
     # writer.close()
     torch.save(model.forward(input_mr), os.path.join('Scaled 1e16 inputs - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
+    torch.save(target_estimate, os.path.join('After SIM Scaled 1e16 inputs - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
     # torch.save(model.forward(input_mr), args.test_name,'test.pt')
 
 

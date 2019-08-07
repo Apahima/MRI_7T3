@@ -49,7 +49,7 @@ class lowfieldsim():
         # print('k_low Tensor with two channels size:', k_low.shape)
 
 
-        for i in range(0, 3):
+        for i in range(0, 1):
             self.inParam['k_high'] = k_space_high_field[:, :, :, i, :, :]
             self.inParam['TE_high'] = self.mat_contents['TE'][0][i] * 1000
             self.inParam['TE_low'] = self.mat_contents['TE'][0][i] * 1000 * 3 / self.B0_low
