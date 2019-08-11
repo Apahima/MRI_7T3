@@ -3,13 +3,14 @@ import os
 import pathlib
 import random
 import shutil
-import time
+from datetime import datetime
+from datetime import date
 
 import numpy as np
 import torch
 import torchvision
 from lowfieldsim import lowfieldsim as simulator_MRI
-# from tensorboardX import SummaryWriter
+from tensorboardX import SummaryWriter
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
@@ -35,7 +36,7 @@ def build_model(args):
 
 
 def build_optim(args, params):
-    optimizer = torch.optim.RMSprop(params, args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.RMSprop(params, args.lr, weight_decay=args.weight_decay, momentum=args.momentum)
     return optimizer
 
 def get_data(k_high_T):
@@ -46,14 +47,18 @@ def get_data(k_high_T):
 
     simulator_class_MRI = simulator_MRI()
 
-    low_res_real, high_res_real, _, _ = simulator_class_MRI.lowfieldsim(k_high_T[:128,:128])
+    low_res_real, high_res_real, _, _ = simulator_class_MRI.lowfieldsim(k_high_T)
     input_mr = low_res_real.permute(2,0,1)
     target = low_res_real.permute(2,0,1)
     output_gt =  high_res_real.permute(2,0,1)
 
+    #Normalization
     input_mr = (input_mr - torch.min(input_mr)) / (torch.max(input_mr)-torch.min(input_mr))
     target = (target - torch.min(target)) / (torch.max(target)-torch.min(target))
     output_gt = (output_gt - torch.min(output_gt)) / (torch.max(output_gt)-torch.min(output_gt))
+    ######
+
+
     #Sanity check
     # target = torch.randn(8, 128, 128)
     # output_gt = torch.randn(8, 128, 128)
@@ -62,7 +67,11 @@ def get_data(k_high_T):
 
 def main(args):
     args.exp_dir.mkdir(parents=True, exist_ok=True)
-    # writer = SummaryWriter(log_dir=args.exp_dir / 'summary')
+    now = datetime.now()
+    construct_time_stamp = now.strftime("_%I-%M-%S %p")
+    folder_name = str(date.today()) + str(construct_time_stamp)
+
+    writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'summary')
 
     mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
     k_high_T = Ttorch.to_tensor(mat_contents['k_high']).to(args.device)
@@ -104,11 +113,21 @@ def main(args):
         target_estimate = target_estimate.permute(2, 0, 1)  # Re-ordering to fit the model expected shape [# coils (channels),in_width, in_height]
 
         target_estimate = (target_estimate - torch.min(target_estimate)) / (torch.max(target_estimate) - torch.min(target_estimate))
+        # Try to normalized the target_estimate with constants
 
         # loss function
-        loss = F.l1_loss(target, target_estimate)  # can also be F.mse_loss
+        loss = F.l1_loss(target, target_estimate) # can also be F.mse_loss
+        # loss = F.l1_loss(target, target_estimate)  + L2# can also be F.mse_loss
+
+
+        output = output.squeeze(0)
+        output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
+        # Try to normalized the output with constants from the original low field raw data
+        # Try normalized to Normal distribution
+
+
         # print(loss)
-        actual_loss = F.l1_loss(output_gt, output.squeeze(0))
+        actual_loss = F.l1_loss(output_gt, output)
 
         model.forward(input_mr)
         optimizer.zero_grad()
@@ -120,15 +139,19 @@ def main(args):
         )
         if epoch % args.report_interval == 0:
             print(f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {loss:.4g} , Actual loss on HF:{actual_loss:.4g}')
+            visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
+        writer.add_scalar('Low field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), loss ,epoch)
+        writer.add_scalar('High field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), actual_loss, epoch)
+    visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
     save_model(args, args.exp_dir, epoch, model, optimizer, best_dev_loss, is_new_best)
-    # writer.close()
-    torch.save(model.forward(input_mr), os.path.join('Scaled 1e16 inputs - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
-    torch.save(target_estimate, os.path.join('After SIM Scaled 1e16 inputs - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
+    writer.close()
+
+
+    torch.save(output, os.path.join('High Field Target - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
+    torch.save(target_estimate, os.path.join('Low Field Reconstruction - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
     # torch.save(model.forward(input_mr), args.test_name,'test.pt')
 
-
-
-def visualize(args, epoch, model, data_loader, writer):
+def visualize(args, epoch, model, input_mr,target_estimate, writer):
     def save_image(image, tag):
         image -= image.min()
         image /= image.max()
@@ -137,15 +160,20 @@ def visualize(args, epoch, model, data_loader, writer):
 
     model.eval()
     with torch.no_grad():
-        for iter, data in enumerate(data_loader):
-            input, target, mean, std, norm = data
-            input = input.unsqueeze(1).to(args.device)
-            target = target.unsqueeze(1).to(args.device)
-            output = model(input)
-            save_image(target, 'Target')
-            save_image(output, 'Reconstruction')
-            save_image(torch.abs(target - output), 'Error')
-            break
+        input = input_mr
+        input = input.to(args.device)
+        target = target_estimate.to(args.device)
+        target = torch.sqrt(torch.sum(target, 1, keepdim=True))
+        output = model(input)
+
+        # Normalization overall not per channel
+        output -= output.min()
+        output /= output.max()
+
+        output = torch.sqrt(torch.sum(output, 1, keepdim=True))
+        save_image(target, 'Low Field Reconstruction')
+        save_image(output, 'High Field Target')
+        save_image(torch.abs(target - output), 'Error')
 
 def save_model(args, exp_dir, epoch, model, optimizer, best_dev_loss, is_new_best):
     torch.save(
@@ -167,7 +195,7 @@ def create_arg_parser():
     parser = Args()
 
     # model parameters
-    parser.add_argument('--num-pools', type=int, default=4, help='Number of U-Net pooling layers')
+    parser.add_argument('--num-pools', type=int, default=3, help='Number of U-Net pooling layers')
     parser.add_argument('--drop-prob', type=float, default=0.0, help='Dropout probability')
     parser.add_argument('--num-chans', type=int, default=8, help='Number of U-Net channels')
 
@@ -180,6 +208,8 @@ def create_arg_parser():
                         help='Multiplicative factor of learning rate decay')
     parser.add_argument('--weight-decay', type=float, default=0.,
                         help='Strength of weight decay regularization')
+    parser.add_argument('--momentum', type=float, default=0.,
+                        help='Momentum factor')
 
     parser.add_argument('--report-interval', type=int, default=100, help='Period of loss reporting')
     parser.add_argument('--data-parallel', action='store_true',
@@ -195,6 +225,7 @@ def create_arg_parser():
                         help='Path to an existing checkpoint. Used along with "--resume"')
 
     parser.add_argument('--num_coil', type=int, default=8,required=True, help='Number of image input  output channels')
+
 
     return parser
 
