@@ -54,12 +54,12 @@ def get_data(k_high_T):
     output_gt =  high_res_real.permute(2,0,1)
 
 
-    # #Normalization to normal distibution Per channel
+    #Scaling to Min-Max Per channel
     # input_mr = Norm_Per_Chan.Min_Max_Scaling(input_mr)
     # target = Norm_Per_Chan.Min_Max_Scaling(target)
     # output_gt = Norm_Per_Chan.Min_Max_Scaling(output_gt)
     #
-    # #Normalization to normal distibution Per channel
+    # #Normalization to normal distribution Per channel
     # input_mr = Norm_Per_Chan.Normalize_Per_Chan(input_mr)
     # target = Norm_Per_Chan.Normalize_Per_Chan(target)
     # output_gt = Norm_Per_Chan.Normalize_Per_Chan(output_gt)
@@ -69,7 +69,7 @@ def get_data(k_high_T):
     input_mr = (input_mr - torch.min(input_mr)) / (torch.max(input_mr)-torch.min(input_mr))
     target = (target - torch.min(target)) / (torch.max(target)-torch.min(target))
     output_gt = (output_gt - torch.min(output_gt)) / (torch.max(output_gt)-torch.min(output_gt))
-    ######
+    # ######
 
 
     #Sanity check
@@ -127,6 +127,12 @@ def main(args):
 
         target_estimate = (target_estimate - torch.min(target_estimate)) / (torch.max(target_estimate) - torch.min(target_estimate))
         # Try to normalized the target_estimate with constants
+
+
+        #Normalized target_estimate to normal distribution per channel
+        # target_test = Norm_Per_Chan.Normalize_Per_Chan(target_estimate)
+
+
 
         # loss function
         loss = F.l1_loss(target, target_estimate) # can also be F.mse_loss
