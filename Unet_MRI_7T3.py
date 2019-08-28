@@ -22,7 +22,66 @@ from fastMRI.models.unet.unet_model import UnetModel
 import Function.Normalization_Per_Channel as Norm_Per_Chan
 
 import scipy.io
+import h5py
 from fastMRI.data import transforms as Ttorch
+
+
+
+class DataTransform:
+    """
+    Data Transformer for running U-Net models on a test dataset.
+    """
+
+    def __init__(self, resolution, which_challenge, mask_func=None):
+        """
+        Args:
+            resolution (int): Resolution of the image.
+            which_challenge (str): Either "singlecoil" or "multicoil" denoting the dataset.
+            mask_func (common.subsample.MaskFunc): A function that can create a mask of
+                appropriate shape.
+        """
+        if which_challenge not in ('singlecoil', 'multicoil'):
+            raise ValueError(f'Challenge should either be "singlecoil" or "multicoil"')
+        self.resolution = resolution
+        self.which_challenge = which_challenge
+        self.mask_func = mask_func
+
+    def __call__(self, kspace, target, attrs, fname, slice):
+        """
+        Args:
+            kspace (numpy.Array): k-space measurements
+            target (numpy.Array): Target image
+            attrs (dict): Acquisition related information stored in the HDF5 object
+            fname (pathlib.Path): Path to the input file
+            slice (int): Serial number of the slice
+        Returns:
+            (tuple): tuple containing:
+                image (torch.Tensor): Normalized zero-filled input image
+                mean (float): Mean of the zero-filled image
+                std (float): Standard deviation of the zero-filled image
+                fname (pathlib.Path): Path to the input file
+                slice (int): Serial number of the slice
+        """
+        kspace = transforms.to_tensor(kspace)
+        if self.mask_func is not None:
+            seed = tuple(map(ord, fname))
+            masked_kspace, _ = transforms.apply_mask(kspace, self.mask_func, seed)
+        else:
+            masked_kspace = kspace
+        # Inverse Fourier Transform to get zero filled solution
+        image = transforms.ifft2(masked_kspace)
+        # Crop input image
+        image = transforms.complex_center_crop(image, (self.resolution, self.resolution))
+        # Absolute value
+        image = transforms.complex_abs(image)
+        # Apply Root-Sum-of-Squares if multicoil data
+        if self.which_challenge == 'multicoil':
+            image = transforms.root_sum_of_squares(image)
+        # Normalize input
+        image, mean, std = transforms.normalize_instance(image)
+        image = image.clamp(-6, 6)
+        return image, mean, std, fname, slice
+
 
 
 def build_model(args):
@@ -243,6 +302,9 @@ def create_arg_parser():
     parser.add_argument('--checkpoint', type=str,
                         help='Path to an existing checkpoint. Used along with "--resume"')
 
+    parser.add_argument('--data-split', choices=['val', 'test'], required=True,
+                        help='Which data partition to run on: "val" or "test"')
+
     parser.add_argument('--num_coil', type=int, default=8,required=True, help='Number of image input  output channels')
 
 
@@ -254,6 +316,17 @@ if __name__ == '__main__':
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+
+    # f = h5py.File('Data/file1001605.h5', 'r')
+    # print(list(f.keys()))
+
+    # data = SliceData(
+    #     root=args.data_path / f'{args.challenge}_{args.data_split}',
+    #     transform=DataTransform(args.resolution, args.challenge),
+    #     sample_rate=1.,
+    #     challenge=args.challenge)
+
     main(args)
+
 
     #Check the check-in feature on Git
