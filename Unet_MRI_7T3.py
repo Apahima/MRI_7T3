@@ -24,7 +24,7 @@ import Function.Normalization_Per_Channel as Norm_Per_Chan
 import scipy.io
 import h5py
 from fastMRI.data import transforms as Ttorch
-
+from Function import MRI_7T3_Evaluate as evaluate
 
 
 class DataTransform:
@@ -218,8 +218,19 @@ def main(args):
         if epoch % args.report_interval == 0:
             print(f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {loss:.4g} , Actual loss on HF:{actual_loss:.4g}')
             visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
+
         writer.add_scalar('Low field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), loss ,epoch)
         writer.add_scalar('High field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), actual_loss, epoch)
+    #Statistics information
+    writer.add_scalar('SSIM Between Low field GT to Predictive Low field {}', evaluate.ssim(target.detach().numpy(), target_estimate.detach().numpy()))
+    writer.add_scalar('SSIM Between High field GT to Predictive High field {}',evaluate.ssim(output_gt.detach().numpy(), output.detach().numpy()))
+    writer.add_scalar('PSNR Between Low field GT to Predictive Low field {}', evaluate.psnr(target.detach().numpy(), target_estimate.detach().numpy()))
+    writer.add_scalar('PSNR Between High field GT to Predictive High field {}',evaluate.psnr(output_gt.detach().numpy(), output.detach().numpy()))
+    writer.add_scalar('MSE Between Low field GT to Predictive Low field {}', evaluate.mse(target.detach().numpy(), target_estimate.detach().numpy()))
+    writer.add_scalar('MSE Between High field GT to Predictive High field {}',evaluate.mse(output_gt.detach().numpy(), output.detach().numpy()))
+    writer.add_scalar('NMSE Between Low field GT to Predictive Low field {}', evaluate.nmse(target.detach().numpy(), target_estimate.detach().numpy()))
+    writer.add_scalar('NMSE Between High field GT to Predictive High field {}',evaluate.nmse(output_gt.detach().numpy(), output.detach().numpy()))
+
     visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
     save_model(args, args.exp_dir, epoch, model, optimizer, best_dev_loss, is_new_best)
     writer.close()
@@ -302,8 +313,9 @@ def create_arg_parser():
     parser.add_argument('--checkpoint', type=str,
                         help='Path to an existing checkpoint. Used along with "--resume"')
 
-    parser.add_argument('--data-split', choices=['val', 'test'], required=True,
-                        help='Which data partition to run on: "val" or "test"')
+    # parser.add_argument('--data-split', choices=['val', 'test'], required=True,
+    #                     help='Which data partition to run on: "val" or "test"')
+    # This feature is dedicate for supervised learning and H5 files
 
     parser.add_argument('--num_coil', type=int, default=8,required=True, help='Number of image input  output channels')
 
