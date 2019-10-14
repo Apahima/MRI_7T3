@@ -145,7 +145,9 @@ def main(args):
 
     writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'summary')
 
-    mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
+    mat_contents = scipy.io.loadmat(os.path.join(os.getcwd(), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
+
+    # mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
     k_high_T = Ttorch.to_tensor(mat_contents['k_high']).to(args.device)
 
     model = build_model(args)
