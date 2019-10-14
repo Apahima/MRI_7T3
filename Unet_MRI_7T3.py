@@ -258,8 +258,8 @@ def visualize(args, epoch, model, input_mr,target_estimate, writer):
         output = model(input)
 
         # Normalization overall not per channel
-        # output -= output.min()
-        # output /= output.max()
+        output -= output.min()
+        output /= output.max()
 
         output = torch.sqrt(torch.sum(output, 1, keepdim=True))
         save_image(target, 'Low Field Reconstruction')
