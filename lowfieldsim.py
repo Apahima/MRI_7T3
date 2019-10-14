@@ -24,7 +24,8 @@ class lowfieldsim():
         self.manipol = Klow.lowfieldgen()  # This is a clsass so it must be loaded with ()
         self.elementwise_mul_abs_complex = Function.elementwise_mul_abs_complex.elementwise_mul_abs_complex
 
-        self.mat_contents = scipy.io.loadmat(os.path.join(os.getcwd(), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
+
+        self.mat_contents = scipy.io.loadmat(os.path.join(os.path.dirname(__file__), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
         # self.mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
         self.B0_low = 0.3
 
