@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import scipy.io
 import os
 
-from fastMRI.data import transforms as Ttorch
+from Function import transforms as Ttorch
 
 test = unittest.TestCase()
 plt.rcParams.update({'font.size': 12})
