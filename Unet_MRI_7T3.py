@@ -114,14 +114,14 @@ def get_data(k_high_T):
 
 
     #Scaling to Min-Max Per channel
-    # input_mr = Norm_Per_Chan.Min_Max_Scaling(input_mr)
-    # target = Norm_Per_Chan.Min_Max_Scaling(target)
-    # output_gt = Norm_Per_Chan.Min_Max_Scaling(output_gt)
+    input_mr = Norm_Per_Chan.Min_Max_Scaling(input_mr)
+    target = Norm_Per_Chan.Min_Max_Scaling(target)
+    output_gt = Norm_Per_Chan.Min_Max_Scaling(output_gt)
     #
     # #Normalization to normal distribution Per channel
-    input_mr = Norm_Per_Chan.Normalize_Per_Chan(input_mr)
-    target = Norm_Per_Chan.Normalize_Per_Chan(target)
-    output_gt = Norm_Per_Chan.Normalize_Per_Chan(output_gt)
+    # input_mr = Norm_Per_Chan.Normalize_Per_Chan(input_mr)
+    # target = Norm_Per_Chan.Normalize_Per_Chan(target)
+    # output_gt = Norm_Per_Chan.Normalize_Per_Chan(output_gt)
 
 
     #Scaling Min-Max [0,1] overall
