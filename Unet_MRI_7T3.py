@@ -143,7 +143,7 @@ def main(args):
     construct_time_stamp = now.strftime("_%I-%M-%S %p")
     folder_name = str(date.today()) + str(construct_time_stamp)
 
-    writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'summary')
+    writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'Unet-Channels {}, --lr ={}, --epochs - {}, --Momentum ={}'.format(args.num_chans, args.lr, args.num_epochs, args.momentum))
 
     mat_contents = scipy.io.loadmat(os.path.join(os.path.dirname(__file__), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
 
@@ -221,8 +221,8 @@ def main(args):
             print(f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {loss:.4g} , Actual loss on HF:{actual_loss:.4g}')
             visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
 
-        writer.add_scalar('Low field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}, --Momentum ={}'.format(args.num_chans, args.num_epochs, args.lr), loss ,epoch)
-        writer.add_scalar('High field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}, --Momentum ={}'.format(args.num_chans, args.num_epochs, args.lr), actual_loss, epoch)
+        writer.add_scalar('Low field Loss', loss ,epoch)
+        writer.add_scalar('High field Loss', actual_loss, epoch)
     #Statistics information
     writer.add_scalar('SSIM Between Low field GT to Predictive Low field {}', evaluate.ssim(target.cpu().detach().numpy(), target_estimate.cpu().detach().numpy()))
     writer.add_scalar('SSIM Between High field GT to Predictive High field {}',evaluate.ssim(output_gt.cpu().detach().numpy(), output.cpu().detach().numpy()))
