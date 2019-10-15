@@ -221,8 +221,8 @@ def main(args):
             print(f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {loss:.4g} , Actual loss on HF:{actual_loss:.4g}')
             visualize(args, epoch, model, input_mr, target_estimate.unsqueeze(0), writer)
 
-        writer.add_scalar('Low field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), loss ,epoch)
-        writer.add_scalar('High field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}'.format(args.num_chans, args.num_epochs, args.lr), actual_loss, epoch)
+        writer.add_scalar('Low field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}, --Momentum ={}'.format(args.num_chans, args.num_epochs, args.lr), loss ,epoch)
+        writer.add_scalar('High field Loss --#Unet-Channels {}, --lr ={}, --epochs - {}, --Momentum ={}'.format(args.num_chans, args.num_epochs, args.lr), actual_loss, epoch)
     #Statistics information
     writer.add_scalar('SSIM Between Low field GT to Predictive Low field {}', evaluate.ssim(target.cpu().detach().numpy(), target_estimate.cpu().detach().numpy()))
     writer.add_scalar('SSIM Between High field GT to Predictive High field {}',evaluate.ssim(output_gt.cpu().detach().numpy(), output.cpu().detach().numpy()))
@@ -238,8 +238,8 @@ def main(args):
     writer.close()
 
 
-    torch.save(output, os.path.join('High Field Target - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
-    torch.save(target_estimate, os.path.join('Low Field Reconstruction - epochs {} -- lr {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.num_chans)))
+    torch.save(output, os.path.join('High Field Target - epochs {} -- lr {} --Momentum {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.momentum, args.num_chans)))
+    torch.save(target_estimate, os.path.join('Low Field Reconstruction - epochs {} -- lr {} --Momentum {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.momentum, args.num_chans)))
     # torch.save(model.forward(input_mr), args.test_name,'test.pt')
 
 def visualize(args, epoch, model, input_mr,target_estimate, writer):
