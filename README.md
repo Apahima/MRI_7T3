@@ -80,4 +80,4 @@ This code depends on the following libraries:
 
 * Detailed code with report examples and figures can be shown in **Main.ipynb** ([Click Here](Main.ipynb))
 * Model optimizations parameters such as convergence rates, errors, image comparison parameters, etc.
-  saved at ___ and can be seen at TensorBoard.
+  saved at ```--exp-dir``` and can be used at TensorBoard dashboard.

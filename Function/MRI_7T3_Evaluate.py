@@ -1,6 +1,8 @@
 import numpy as np
-from skimage.measure import compare_psnr, compare_ssim
+# from skimage.measure import compare_psnr
 from skimage.metrics import structural_similarity
+from skimage.metrics import peak_signal_noise_ratio as compare_psnr
+
 
 def mse(gt, pred):
     """ Compute Mean Squared Error (MSE) """
