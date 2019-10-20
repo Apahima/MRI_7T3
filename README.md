@@ -70,8 +70,8 @@ This code depends on the following libraries:
 ### Running directly from Git Repos
 
 ** **
-    !git clone https://github.com/Apahima/MRI_7T3.git
-    !git clone https://github.com/Apahima/fastMRI.git MRI_7T3/fastMRI
+    git clone https://github.com/Apahima/MRI_7T3.git
+    git clone https://github.com/Apahima/fastMRI.git MRI_7T3/fastMRI
     
     srun -c 2 --gres=gpu:1 --pty python -m Unet_MRI_7T3  --num_coil 8 --num-chans 24 --batch-size 1 --checkpoint checkpoint/best_model.pt  --challenge multicoil --lr 0.2 --num-epochs 10000 --data-path \temp --report-interval 1000 --exp-dir checkpoints/Eval  
 
