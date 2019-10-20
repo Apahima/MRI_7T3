@@ -26,7 +26,6 @@ class lowfieldsim():
 
 
         self.mat_contents = scipy.io.loadmat(os.path.join(os.path.dirname(__file__), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
-        # self.mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
         self.B0_low = 0.3
 
         sorted(self.mat_contents.keys())
@@ -114,7 +113,7 @@ class lowfieldsim():
         return low_res_real, high_res_real,img_low_combined ,img_high_combined
 
 if __name__ == '__main__':
-    mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
+    mat_contents = scipy.io.loadmat(os.path.join(os.path.dirname(__file__), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
     B0_low = 0.3
 
     sorted(mat_contents.keys())

@@ -147,7 +147,6 @@ def main(args):
 
     mat_contents = scipy.io.loadmat(os.path.join(os.path.dirname(__file__), 'Data','fat-water@3T-3echo.mat')) #Load directly from the working directory
 
-    # mat_contents = scipy.io.loadmat('fat-water@3T-3echo.mat')
     k_high_T = Ttorch.to_tensor(mat_contents['k_high']).to(args.device)
 
     model = build_model(args)
@@ -240,7 +239,7 @@ def main(args):
 
     torch.save(output, os.path.join('High Field Target - epochs {} -- lr {} --Momentum {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.momentum, args.num_chans)))
     torch.save(target_estimate, os.path.join('Low Field Reconstruction - epochs {} -- lr {} --Momentum {} -- Unet_channels{}.pt'.format(args.num_epochs, args.lr, args.momentum, args.num_chans)))
-    # torch.save(model.forward(input_mr), args.test_name,'test.pt')
+
 
 def visualize(args, epoch, model, input_mr,target_estimate, writer):
     def save_image(image, tag):
