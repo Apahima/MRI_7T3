@@ -2,17 +2,17 @@
 
 Self-Supervised method is unique method in learning community, one of the powerful Self-Supervised usage is the ability to use very small dataset for getting good predictive results. The paper represents comprehensive approach for transforming Low Field MRI images to High Field MRI with the help of sophisticated AI algorithm and without MRI tool hardware changes. The algorithm combined two major components: The first one is physics-based MRI simulator and the second is U-Net network used as a prior for image reconstruction. Since the algorithm is physics-based - big dataset is no needed, only few samples are enough to achieve good results for versatile MRI use cases. For our knowledge such MRI approach not investigate yet and it should be a breakthrough.  
 
-Overview
---------------
-## Data
+## Overview
+
+### Data
 
 Provided data for fat-water is located at Data folder and can be [Here](https://www.ismrm.org/workshops/FatWater12/data.htm)
 
-## Pre-Processing 
+### Pre-Processing 
 
 No need for Pre-Processing since it's integrated part of Unet_MRI_7T3.py.
 
-## Model
+### Model
 
 The provided model is basically concatenate of two models, but with a twist. First model is U-Net model with modification to provided raw data type. 
 The second model is MRI physics-based simulator, the fact that is physics-based simulator allow to use Self-Supervised model.
@@ -21,9 +21,8 @@ See picture below for understanding the overall Model architecture.
 ![ModelHighLevelArchitecture.png](Img/ModelHighLevelArchitecture.png)
 
 
+## Code Structure
 
-Code Structure
---------------
 ### Main Function:
 
 **U-Net network**
@@ -44,8 +43,8 @@ Code Structure
     # Return it again to inverse model for getting High Field data.
     
 
-How to use:
---------------
+## How to use
+
 ### Dependencies
 This code depends on the following libraries:
 * Scikit-Image 
@@ -68,4 +67,6 @@ This code depends on the following libraries:
 
     srun -c 2 --gres=gpu:1 --pty python -m Unet_MRI_7T3  --num_coil 8 --num-chans 24 --batch-size 1 --checkpoint checkpoint/best_model.pt  --challenge multicoil --lr 0.2 --num-epochs 10000 --data-path \temp --report-interval 1000 --exp-dir checkpoints/Eval  
 
-    
+## Notes
+
+Detailed code with report examples and figures can be shown in **Main.ipynb** ([Click Here](Main.ipynb))
