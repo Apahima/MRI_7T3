@@ -1,6 +1,6 @@
 import numpy as np
 from skimage.measure import compare_psnr, compare_ssim
-
+from skimage.metrics import structural_similarity
 
 def mse(gt, pred):
     """ Compute Mean Squared Error (MSE) """
@@ -19,6 +19,6 @@ def psnr(gt, pred):
 
 def ssim(gt, pred):
     """ Compute Structural Similarity Index Metric (SSIM). """
-    return compare_ssim(
+    return structural_similarity(
         gt.transpose(1, 2, 0), pred.transpose(1, 2, 0), multichannel=True, data_range=gt.max()
     )

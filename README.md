@@ -47,7 +47,7 @@ See picture below for understanding the overall Model architecture.
 
 ### Dependencies
 This code depends on the following libraries:
-* Scikit-Image 
+* Scikit-Image 0.16.1
 * PyTorch
 * TensorboardX
 * [fastMRI](https://github.com/Apahima/fastMRI.git) 
@@ -67,6 +67,17 @@ This code depends on the following libraries:
 
     srun -c 2 --gres=gpu:1 --pty python -m Unet_MRI_7T3  --num_coil 8 --num-chans 24 --batch-size 1 --checkpoint checkpoint/best_model.pt  --challenge multicoil --lr 0.2 --num-epochs 10000 --data-path \temp --report-interval 1000 --exp-dir checkpoints/Eval  
 
+### Running directly from Git Repos
+
+** **
+    !git clone https://github.com/Apahima/MRI_7T3.git
+    !git clone https://github.com/Apahima/fastMRI.git MRI_7T3/fastMRI
+    
+    srun -c 2 --gres=gpu:1 --pty python -m Unet_MRI_7T3  --num_coil 8 --num-chans 24 --batch-size 1 --checkpoint checkpoint/best_model.pt  --challenge multicoil --lr 0.2 --num-epochs 10000 --data-path \temp --report-interval 1000 --exp-dir checkpoints/Eval  
+
+    
 ## Notes
 
-Detailed code with report examples and figures can be shown in **Main.ipynb** ([Click Here](Main.ipynb))
+* Detailed code with report examples and figures can be shown in **Main.ipynb** ([Click Here](Main.ipynb))
+* Model optimizations parameters such as convergence rates, errors, image comparison parameters, etc.
+  saved at ___ and can be seen at TensorBoard.
