@@ -18,7 +18,7 @@ The provided model is basically concatenate of two models, but with a twist. Fir
 The second model is MRI physics-based simulator, the fact that is physics-based simulator allow to use Self-Supervised model.
 See picture below for understanding the overall Model architecture.
 
-![ModelHighLevelArchitecture.png](img/ModelHighLevelArchitecture.png)
+![ModelHighLevelArchitecture.png](Img/ModelHighLevelArchitecture.png)
 
 
 
@@ -40,7 +40,8 @@ Code Structure
 **Unet_MRI_7T3.py**
 
     # The main enginge for this work.
-    # Takes K-Space High Field raw data and transfom it to Low Field return it again to inverse model for getting High Field data.
+    # Takes K-Space High Field raw data and transfom it to Low Field 
+    # Return it again to inverse model for getting High Field data.
     
 
 How to use:
