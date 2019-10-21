@@ -1,6 +1,11 @@
-# Comprehensive Self-Supervised method for Reconstruction High Field from Low field MRI Scans
+# COMPREHENSIVE SELF-SUPERVISED HIGH FIELD MRI SCANS RECONSTRUCTION METHOD FROM LOW FIELD DATASET
 
-Self-Supervised method is unique method in learning community, one of the powerful Self-Supervised usage is the ability to use very small dataset for getting good predictive results. The paper represents comprehensive approach for transforming Low Field MRI images to High Field MRI with the help of sophisticated AI algorithm and without MRI tool hardware changes. The algorithm combined two major components: The first one is physics-based MRI simulator and the second is U-Net network used as a prior for image reconstruction. Since the algorithm is physics-based - big dataset is no needed, only few samples are enough to achieve good results for versatile MRI use cases. For our knowledge such MRI approach not investigate yet and it should be a breakthrough.  
+Self-Supervised method is unique method in learning community, one of the powerful Self-Supervised usage is the ability to use very small 
+dataset for getting good predictive results. The paper represents comprehensive approach for transforming Low Field MRI images 
+to High Field MRI with the help of sophisticated AI algorithm and without MRI tool hardware changes. The algorithm combined two 
+major components: The first one is physics-based MRI simulator and the second is U-Net network used as a prior for image reconstruction. 
+Since the algorithm is physics-based - big dataset is no needed, only few samples are enough to achieve good results for versatile MRI use cases. 
+For our knowledge such MRI approach not investigate yet.  
 
 ## Overview
 
