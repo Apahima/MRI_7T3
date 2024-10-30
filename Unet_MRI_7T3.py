@@ -27,6 +27,12 @@ from fastMRI.data import transforms as Ttorch
 from Function import MRI_7T3_Evaluate as evaluate
 
 
+def complex_norm_cart(x):
+    a = torch.min(torch.min(torch.real(x), dim=1, keepdim=True)[0], dim=2, keepdim=True)[0]
+    b = torch.max(torch.max(torch.real(x), dim=1, keepdim=True)[0], dim=2, keepdim=True)[0]
+    x = ((x - a) / (b-a)).double()
+    return x
+
 class DataTransform:
     """
     Data Transformer for running U-Net models on a test dataset.
@@ -125,6 +131,10 @@ def get_data(k_high_T):
 
 
     #Scaling Min-Max [0,1] overall
+    #input_mr = complex_norm_cart(input_mr)
+    #target = complex_norm_cart(target)
+    #output_gt = complex_norm_cart(output_gt)
+
     input_mr = (input_mr - torch.min(input_mr)) / (torch.max(input_mr)-torch.min(input_mr))
     target = (target - torch.min(target)) / (torch.max(target)-torch.min(target))
     output_gt = (output_gt - torch.min(output_gt)) / (torch.max(output_gt)-torch.min(output_gt))
@@ -185,6 +195,7 @@ def main(args):
 
         target_estimate = target_estimate.permute(2, 0, 1)  # Re-ordering to fit the model expected shape [# coils (channels),in_width, in_height]
 
+        #target_estimate = complex_norm_cart(target_estimate, 0, 1)
         target_estimate = (target_estimate - torch.min(target_estimate)) / (torch.max(target_estimate) - torch.min(target_estimate))
         # Try to normalized the target_estimate with constants
 

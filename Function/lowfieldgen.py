@@ -27,7 +27,8 @@ class lowfieldgen(nn.Module):
         self.T2_liver = 0.043
         self.T2_fat = 0.085
 
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cpu')
 
     def klow(self, inParam):
         # print('Test')

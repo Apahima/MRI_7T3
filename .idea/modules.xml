@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/MRI_7T3.iml" filepath="$PROJECT_DIR$/.idea/MRI_7T3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fastMRI/.idea/fastMRI.iml" filepath="$PROJECT_DIR$/fastMRI/.idea/fastMRI.iml" />
     </modules>
   </component>
 </project>
